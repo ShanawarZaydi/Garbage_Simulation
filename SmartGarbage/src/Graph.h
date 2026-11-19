@@ -2,6 +2,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include <string>
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -28,4 +29,31 @@ public:
     void Dijkstra(int startNode, int destinationNode, bool useTime);
 };
 
+class Trie
+{
+private:
+    struct TrieNode
+    {
+        vector<pair<unsigned char, TrieNode *>> children;
+
+        bool isEnd;
+        string roadName;
+        vector<int> graphNodes;
+
+        TrieNode();
+    };
+
+    TrieNode *root;
+
+    TrieNode *findChild(TrieNode *node, unsigned char character);
+
+    void displayMatches(TrieNode *node);
+
+public:
+    Trie();
+
+    void insert(string roadName, vector<int> nodes);
+
+    void search(string prefix);
+};
 #endif

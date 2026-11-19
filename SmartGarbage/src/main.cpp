@@ -51,5 +51,59 @@ int main()
 
     cityGraph.Dijkstra(0, 500, false);
     cityGraph.Dijkstra(0, 500, true);
+
+    ifstream roadFile("data/road_names.json");
+
+    if (!roadFile.is_open())
+    {
+        cout << "Road Names File Not Found!" << endl;
+        return 1;
+    }
+
+    json roadData;
+
+    roadFile >> roadData;
+
+    roadFile.close();
+
+    cout << "\nRoad Names Loaded Successfully!" << endl;
+    cout << "Total Road Names: " << roadData.size() << endl;
+
+    auto firstRoad = roadData.begin();
+
+    cout << "\nFirst Road: " << firstRoad.key() << endl;
+
+    cout << "Connected Nodes: ";
+
+    for (int i = 0; i < firstRoad.value()["nodes"].size(); i++)
+    {
+        cout << firstRoad.value()["nodes"][i] << " ";
+    }
+
+    cout << endl;
+
+    // TRIE----------------------------
+    Trie roadTrie;
+
+    for (auto it = roadData.begin(); it != roadData.end(); it++)
+    {
+        string roadName = it.key();
+
+        vector<int> connectedNodes;
+
+        for (int i = 0; i < it.value()["nodes"].size(); i++)
+        {
+            connectedNodes.push_back(it.value()["nodes"][i]);
+        }
+
+        roadTrie.insert(roadName, connectedNodes);
+    }
+
+    cout << "\nTrie Loaded Successfully!" << endl;
+    cout << "Total Roads Inserted: " << roadData.size() << endl;
+
+    roadTrie.search("Ataturk");
+    roadTrie.search("7th");
+    roadTrie.search("شارع");
     return 0;
 }
