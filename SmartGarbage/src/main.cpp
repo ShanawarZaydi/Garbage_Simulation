@@ -44,11 +44,12 @@ int main()
     cityGraph.displayGraphInfo();
     cityGraph.BFS(0);
 
-    cityGraph.Dijkstra(0, 249, false);
-
     // false = Distance Mode
     //  true = Time Mode
+    cityGraph.Dijkstra(0, 249, false);
     cityGraph.Dijkstra(0, 249, true);
 
+    cityGraph.Dijkstra(0, 500, false);
+    cityGraph.Dijkstra(0, 500, true);
     return 0;
 }
