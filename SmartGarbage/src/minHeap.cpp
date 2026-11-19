@@ -1,18 +1,23 @@
 
 #include "MinHeap.h"
 
-void MinHeap::insert(double value)
+void MinHeap::insert(double weight, int node)
 {
-    heap.push_back(value);
+    pair<double, int> newValue;
+
+    newValue.first = weight;
+    newValue.second = node;
+
+    heap.push_back(newValue);
 
     heapifyUp(heap.size() - 1);
 }
 
-double MinHeap::getMinimum()
+pair<double, int> MinHeap::getMinimum()
 {
     if (heap.empty())
     {
-        return -1;
+        return {-1, -1};
     }
 
     return heap[0];
@@ -46,9 +51,9 @@ void MinHeap::heapifyUp(int index)
     {
         int parent = (index - 1) / 2;
 
-        if (heap[index] < heap[parent])
+        if (heap[index].first < heap[parent].first)
         {
-            double temp = heap[index];
+            pair<double, int> temp = heap[index];
             heap[index] = heap[parent];
             heap[parent] = temp;
 
@@ -72,19 +77,21 @@ void MinHeap::heapifyDown(int index)
         int left = 2 * index + 1;
         int right = 2 * index + 2;
 
-        if (left < size && heap[left] < heap[smallest])
+        if (left < size &&
+            heap[left].first < heap[smallest].first)
         {
             smallest = left;
         }
 
-        if (right < size && heap[right] < heap[smallest])
+        if (right < size &&
+            heap[right].first < heap[smallest].first)
         {
             smallest = right;
         }
 
         if (smallest != index)
         {
-            double temp = heap[index];
+            pair<double, int> temp = heap[index];
             heap[index] = heap[smallest];
             heap[smallest] = temp;
 

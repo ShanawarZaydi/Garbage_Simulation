@@ -3,18 +3,19 @@
 #define MINHEAP_H
 
 #include <vector>
+#include <utility>
 
 using namespace std;
 
 class MinHeap
 {
 private:
-    vector<double> heap;
+    vector<pair<double, int>> heap;
 
 public:
-    void insert(double value);
+    void insert(double weight, int node);
 
-    double getMinimum();
+    pair<double, int> getMinimum();
 
     void removeMinimum();
 
