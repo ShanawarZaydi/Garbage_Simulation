@@ -24,6 +24,8 @@ public:
     void displayGraphInfo();
 
     void BFS(int startNode);
+
+    void Dijkstra(int startNode, int destinationNode, bool useTime);
 };
 
 #endif
