@@ -100,6 +100,27 @@ int main()
     }
 
     cout << "\nTrie Loaded Successfully!" << endl;
+    vector<int> destinationNodes = roadTrie.getRoadNodes("Ataturk Avenue");
+
+    if (destinationNodes.size() > 0)
+    {
+        cout << "\nRoad Selected: Ataturk Avenue" << endl;
+        cout << "Available Destination Nodes: ";
+
+        for (int i = 0; i < destinationNodes.size(); i++)
+        {
+            cout << destinationNodes[i] << " ";
+        }
+
+        cout << "\nSelected Destination Node: " << destinationNodes[0] << endl;
+
+        cityGraph.Dijkstra(0, destinationNodes[0], false);
+        cityGraph.Dijkstra(0, destinationNodes[0], true);
+    }
+    else
+    {
+        cout << "\nRoad Not Found!" << endl;
+    }
     cout << "Total Roads Inserted: " << roadData.size() << endl;
 
     roadTrie.search("Ataturk");

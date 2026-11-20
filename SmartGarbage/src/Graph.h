@@ -55,5 +55,6 @@ public:
     void insert(string roadName, vector<int> nodes);
 
     void search(string prefix);
+    vector<int> getRoadNodes(string roadName);
 };
 #endif

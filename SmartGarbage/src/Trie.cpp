@@ -95,3 +95,26 @@ void Trie::search(string prefix)
 
     displayMatches(current);
 }
+vector<int> Trie::getRoadNodes(string roadName)
+{
+    TrieNode *current = root;
+
+    for (int i = 0; i < roadName.length(); i++)
+    {
+        unsigned char character = (unsigned char)roadName[i];
+
+        current = findChild(current, character);
+
+        if (current == nullptr)
+        {
+            return {};
+        }
+    }
+
+    if (current->isEnd)
+    {
+        return current->graphNodes;
+    }
+
+    return {};
+}
