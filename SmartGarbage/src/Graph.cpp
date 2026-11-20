@@ -250,7 +250,7 @@ int Graph::findNearestNode(int startNode, vector<int> destinationNodes)
     {
         int node = destinationNodes[i];
 
-        if (node >= 0 && node < totalNodes)
+        if (node >= 0 && node < totalNodes && node != startNode)
         {
             if (distance[node] < shortestDistance)
             {
