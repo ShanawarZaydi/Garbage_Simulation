@@ -45,7 +45,7 @@ int main()
     cityGraph.BFS(0);
 
     // false = Distance Mode
-    //  true = Time Mode
+    // true = Time Mode
     cityGraph.Dijkstra(0, 249, false);
     cityGraph.Dijkstra(0, 249, true);
 
@@ -63,7 +63,6 @@ int main()
     json roadData;
 
     roadFile >> roadData;
-
     roadFile.close();
 
     cout << "\nRoad Names Loaded Successfully!" << endl;
@@ -72,7 +71,6 @@ int main()
     auto firstRoad = roadData.begin();
 
     cout << "\nFirst Road: " << firstRoad.key() << endl;
-
     cout << "Connected Nodes: ";
 
     for (int i = 0; i < firstRoad.value()["nodes"].size(); i++)
@@ -82,7 +80,7 @@ int main()
 
     cout << endl;
 
-    // TRIE----------------------------
+    // TRIE
     Trie roadTrie;
 
     for (auto it = roadData.begin(); it != roadData.end(); it++)
@@ -100,11 +98,31 @@ int main()
     }
 
     cout << "\nTrie Loaded Successfully!" << endl;
-    vector<int> destinationNodes = roadTrie.getRoadNodes("Ataturk Avenue");
+
+    // Starting Node Input
+    int startNode;
+
+    cout << "\nEnter Starting Node (0-767): ";
+    cin >> startNode;
+    cin.ignore();
+
+    if (startNode < 0 || startNode >= totalNodes)
+    {
+        cout << "Invalid Starting Node!" << endl;
+        return 1;
+    }
+
+    // Road Name Input
+    string roadName;
+
+    cout << "\nEnter Road Name: ";
+    getline(cin, roadName);
+
+    vector<int> destinationNodes = roadTrie.getRoadNodes(roadName);
 
     if (destinationNodes.size() > 0)
     {
-        cout << "\nRoad Selected: Ataturk Avenue" << endl;
+        cout << "\nRoad Selected: " << roadName << endl;
         cout << "Available Destination Nodes: ";
 
         for (int i = 0; i < destinationNodes.size(); i++)
@@ -112,19 +130,31 @@ int main()
             cout << destinationNodes[i] << " ";
         }
 
-        cout << "\nSelected Destination Node: " << destinationNodes[0] << endl;
+        int nearestNode = cityGraph.findNearestNode(startNode, destinationNodes);
 
-        cityGraph.Dijkstra(0, destinationNodes[0], false);
-        cityGraph.Dijkstra(0, destinationNodes[0], true);
+        if (nearestNode != -1)
+        {
+            cout << "\nNearest Destination Node: " << nearestNode << endl;
+
+            cityGraph.Dijkstra(startNode, nearestNode, false);
+
+            cityGraph.Dijkstra(startNode, nearestNode, true);
+        }
+        else
+        {
+            cout << "\nNo Reachable Destination Node Found!" << endl;
+        }
     }
     else
     {
         cout << "\nRoad Not Found!" << endl;
     }
-    cout << "Total Roads Inserted: " << roadData.size() << endl;
+
+    cout << "\nTotal Roads Inserted: " << roadData.size() << endl;
 
     roadTrie.search("Ataturk");
     roadTrie.search("7th");
     roadTrie.search("شارع");
+
     return 0;
 }

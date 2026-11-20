@@ -202,3 +202,63 @@ void Graph::Dijkstra(int startNode, int destinationNode, bool useTime)
 
     cout << endl;
 }
+int Graph::findNearestNode(int startNode, vector<int> destinationNodes)
+{
+    vector<double> distance(totalNodes, numeric_limits<double>::max());
+
+    MinHeap minHeap;
+
+    distance[startNode] = 0;
+
+    minHeap.insert(0, startNode);
+
+    while (!minHeap.isEmpty())
+    {
+        pair<double, int> current = minHeap.getMinimum();
+
+        minHeap.removeMinimum();
+
+        double currentDistance = current.first;
+        int currentNode = current.second;
+
+        if (currentDistance > distance[currentNode])
+        {
+            continue;
+        }
+
+        for (int i = 0; i < adjacencyList[currentNode].size(); i++)
+        {
+            Edge road = adjacencyList[currentNode][i];
+
+            int nextNode = road.destination;
+
+            double newDistance = currentDistance + road.distance;
+
+            if (newDistance < distance[nextNode])
+            {
+                distance[nextNode] = newDistance;
+
+                minHeap.insert(newDistance, nextNode);
+            }
+        }
+    }
+
+    int nearestNode = -1;
+    double shortestDistance = numeric_limits<double>::max();
+
+    for (int i = 0; i < destinationNodes.size(); i++)
+    {
+        int node = destinationNodes[i];
+
+        if (node >= 0 && node < totalNodes)
+        {
+            if (distance[node] < shortestDistance)
+            {
+                shortestDistance = distance[node];
+                nearestNode = node;
+            }
+        }
+    }
+
+    return nearestNode;
+}
