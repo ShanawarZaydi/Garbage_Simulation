@@ -8,7 +8,29 @@ h2 {
     padding: 12px;
 }
 
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    flex-wrap: wrap;
+}
+
+#controls button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#controls button:hover {
+    background-color: #555;
+}
+
 #map {
-    height: 85vh;
+    height: 78vh;
     width: 100%;
 }

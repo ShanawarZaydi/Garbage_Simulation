@@ -31,9 +31,7 @@ fetch('../data/graph.json')
         // Display Road Connections
         for (var i = 0; i < data.edges.length; i++) {
 
-            var edge = data.edges[i];
-
-            L.polyline(edge.geometry, {
+            L.polyline(data.edges[i].geometry, {
                 color: 'gray',
                 weight: 2
             }).addTo(map);
@@ -65,7 +63,10 @@ fetch('../data/graph.json')
 
                     for (var i = 0; i < route.length - 1; i++) {
 
-                        var geometry = getEdgeGeometry(route[i], route[i + 1]);
+                        var geometry = getEdgeGeometry(
+                            route[i],
+                            route[i + 1]
+                        );
 
                         if (geometry != null) {
 
@@ -92,19 +93,20 @@ fetch('../data/graph.json')
                 var shortestPoints = getRouteGeometry(shortestRoute);
                 var fastestPoints = getRouteGeometry(fastestRoute);
 
-                // Display Shortest Route
-                L.polyline(shortestPoints, {
+                // Create Route Layers
+                var shortestLayer = L.polyline(shortestPoints, {
                     color: 'red',
                     weight: 5
-                }).addTo(map);
+                });
 
-                // Display Fastest Route
-                L.polyline(fastestPoints, {
+                var fastestLayer = L.polyline(fastestPoints, {
                     color: 'green',
                     weight: 5
-                }).addTo(map);
+                });
 
-                // Store Fastest Route Edges
+                var commonLayer = L.layerGroup();
+
+                // Find Common Road Segments
                 var fastestEdges = {};
 
                 for (var i = 0; i < fastestRoute.length - 1; i++) {
@@ -113,9 +115,6 @@ fetch('../data/graph.json')
 
                     fastestEdges[key] = true;
                 }
-
-                // Highlight Common Road Segments
-                var commonCount = 0;
 
                 for (var i = 0; i < shortestRoute.length - 1; i++) {
 
@@ -135,39 +134,88 @@ fetch('../data/graph.json')
                                 weight: 7
                             })
                                 .bindPopup('Common Route')
-                                .addTo(map);
-
-                            commonCount++;
+                                .addTo(commonLayer);
                         }
                     }
                 }
 
-                // Start Marker
+                // Starting Point
                 L.marker(nodeCoordinates[routeData.startNode])
                     .bindPopup('Starting Point')
                     .addTo(map);
 
-                // Destination Marker
+                // Destination Point
                 L.marker(nodeCoordinates[routeData.destinationNode])
                     .bindPopup('Destination Point')
                     .addTo(map);
 
+                // Show Both Routes by Default
+                function showBothRoutes() {
+
+                    map.removeLayer(shortestLayer);
+                    map.removeLayer(fastestLayer);
+                    map.removeLayer(commonLayer);
+
+                    shortestLayer.addTo(map);
+                    fastestLayer.addTo(map);
+                    commonLayer.addTo(map);
+                }
+
+                // Show Shortest Route
+                function showShortestRoute() {
+
+                    map.removeLayer(shortestLayer);
+                    map.removeLayer(fastestLayer);
+                    map.removeLayer(commonLayer);
+
+                    shortestLayer.addTo(map);
+                }
+
+                // Show Fastest Route
+                function showFastestRoute() {
+
+                    map.removeLayer(shortestLayer);
+                    map.removeLayer(fastestLayer);
+                    map.removeLayer(commonLayer);
+
+                    fastestLayer.addTo(map);
+                }
+
+                // Show Common Route
+                function showCommonRoute() {
+
+                    map.removeLayer(shortestLayer);
+                    map.removeLayer(fastestLayer);
+                    map.removeLayer(commonLayer);
+
+                    commonLayer.addTo(map);
+                }
+
+                // Connect Buttons
+                document.getElementById('showBoth').onclick = showBothRoutes;
+
+                document.getElementById('showShortest').onclick = showShortestRoute;
+
+                document.getElementById('showFastest').onclick = showFastestRoute;
+
+                document.getElementById('showCommon').onclick = showCommonRoute;
+
+                // Display Both Routes Initially
+                showBothRoutes();
+
                 // Zoom to Routes
                 var allPoints = shortestPoints.concat(fastestPoints);
 
-                map.fitBounds(L.latLngBounds(allPoints));
+                if (allPoints.length > 0) {
+                    map.fitBounds(L.latLngBounds(allPoints));
+                }
 
-                console.log('Shortest Route Displayed!');
-                console.log('Fastest Route Displayed!');
-                console.log('Common Road Segments:', commonCount);
+                console.log('Route Controls Loaded Successfully!');
 
             })
             .catch(error => {
                 console.log('Error Loading Routes:', error);
             });
-
-        console.log('Total Nodes:', data.nodes.length);
-        console.log('Total Edges:', data.edges.length);
 
     })
     .catch(error => {
