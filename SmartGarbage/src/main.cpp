@@ -77,11 +77,19 @@ int main(int argc, char *argv[])
 
     int startNode;
     string roadName;
+    string priority;
 
-    if (argc == 3)
+    if (argc == 4)
     {
         startNode = stoi(argv[1]);
         roadName = argv[2];
+        priority = argv[3];
+    }
+    else if (argc == 3)
+    {
+        startNode = stoi(argv[1]);
+        roadName = argv[2];
+        priority = "normal";
     }
     else
     {
@@ -91,6 +99,9 @@ int main(int argc, char *argv[])
 
         cout << "Enter Destination Road: ";
         getline(cin, roadName);
+
+        cout << "Enter Collection Priority (normal/urgent): ";
+        getline(cin, priority);
     }
 
     while (roadName.length() > 0 && roadName[0] == ' ')
@@ -134,6 +145,47 @@ int main(int argc, char *argv[])
     vector<int> shortestRoute = cityGraph.Dijkstra(startNode, nearestNode, false);
 
     vector<int> fastestRoute = cityGraph.Dijkstra(startNode, nearestNode, true);
+
+    // AI Agent Decision Making
+
+    vector<int> recommendedRoute;
+    string recommendationReason;
+
+    if (priority == "normal")
+    {
+        recommendedRoute = shortestRoute;
+        recommendationReason = "Shortest distance selected for normal collection.";
+    }
+    else if (priority == "urgent")
+    {
+        recommendedRoute = fastestRoute;
+        recommendationReason = "Fastest route selected for urgent collection.";
+    }
+    else
+    {
+        cout << "\nInvalid Priority! Use normal or urgent." << endl;
+        return 1;
+    }
+
+    cout << "\n==================================" << endl;
+    cout << " AI AGENT RECOMMENDATION" << endl;
+    cout << "==================================" << endl;
+
+    cout << "Collection Priority: " << priority << endl;
+
+    cout << "Recommended Route: ";
+
+    for (int i = 0; i < recommendedRoute.size(); i++)
+    {
+        cout << recommendedRoute[i];
+
+        if (i != recommendedRoute.size() - 1)
+        {
+            cout << " -> ";
+        }
+    }
+
+    cout << "\nReason: " << recommendationReason << endl;
 
     json routeData;
 
