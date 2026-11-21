@@ -26,7 +26,7 @@ public:
 
     void BFS(int startNode);
 
-    void Dijkstra(int startNode, int destinationNode, bool useTime);
+    vector<int> Dijkstra(int startNode, int destinationNode, bool useTime);
     int findNearestNode(int startNode, vector<int> destinationNodes);
 };
 

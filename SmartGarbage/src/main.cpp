@@ -91,6 +91,16 @@ int main()
     cout << "Enter Destination Road: ";
     getline(cin, roadName);
 
+    while (roadName.length() > 0 && roadName[0] == ' ')
+    {
+        roadName.erase(0, 1);
+    }
+
+    while (roadName.length() > 0 && roadName[roadName.length() - 1] == ' ')
+    {
+        roadName.erase(roadName.length() - 1, 1);
+    }
+
     vector<int> destinationNodes = roadTrie.getRoadNodes(roadName);
 
     if (destinationNodes.size() == 0)
@@ -113,9 +123,30 @@ int main()
 
     cout << "\nCalculating Routes..." << endl;
 
-    cityGraph.Dijkstra(startNode, nearestNode, false);
+    vector<int> shortestRoute = cityGraph.Dijkstra(startNode, nearestNode, false);
 
-    cityGraph.Dijkstra(startNode, nearestNode, true);
+    vector<int> fastestRoute = cityGraph.Dijkstra(startNode, nearestNode, true);
+
+    json routeData;
+
+    routeData["startNode"] = startNode;
+    routeData["destinationNode"] = nearestNode;
+
+    routeData["shortestRoute"] = shortestRoute;
+    routeData["fastestRoute"] = fastestRoute;
+
+    ofstream routeFile("data/route.json");
+
+    if (!routeFile.is_open())
+    {
+        cout << "\nUnable to Create Route File!" << endl;
+        return 1;
+    }
+
+    routeFile << routeData.dump(4);
+    routeFile.close();
+
+    cout << "\nRoutes Saved Successfully!" << endl;
 
     cout << "\nRoute Calculation Complete!" << endl;
 

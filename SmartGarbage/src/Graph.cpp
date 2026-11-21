@@ -93,13 +93,13 @@ void Graph::BFS(int startNode)
     cout << "Reachable Nodes: " << visitedCount << endl;
 }
 
-void Graph::Dijkstra(int startNode, int destinationNode, bool useTime)
+vector<int> Graph::Dijkstra(int startNode, int destinationNode, bool useTime)
 {
     if (startNode < 0 || startNode >= totalNodes ||
         destinationNode < 0 || destinationNode >= totalNodes)
     {
         cout << "\nInvalid Node ID!" << endl;
-        return;
+        return {};
     }
 
     vector<double> distance(totalNodes, numeric_limits<double>::max());
@@ -159,10 +159,11 @@ void Graph::Dijkstra(int startNode, int destinationNode, bool useTime)
     if (distance[destinationNode] == numeric_limits<double>::max())
     {
         cout << "\nNo Route Found!" << endl;
-        return;
+        return {};
     }
 
     vector<int> route;
+    vector<int> finalRoute;
 
     int currentNode = destinationNode;
 
@@ -171,6 +172,11 @@ void Graph::Dijkstra(int startNode, int destinationNode, bool useTime)
         route.push_back(currentNode);
 
         currentNode = parent[currentNode];
+    }
+
+    for (int i = route.size() - 1; i >= 0; i--)
+    {
+        finalRoute.push_back(route[i]);
     }
 
     cout << "\nDijkstra Results" << endl;
@@ -190,18 +196,21 @@ void Graph::Dijkstra(int startNode, int destinationNode, bool useTime)
 
     cout << "Route: ";
 
-    for (int i = route.size() - 1; i >= 0; i--)
+    for (int i = 0; i < finalRoute.size(); i++)
     {
-        cout << route[i];
+        cout << finalRoute[i];
 
-        if (i > 0)
+        if (i < finalRoute.size() - 1)
         {
             cout << " -> ";
         }
     }
 
     cout << endl;
+
+    return finalRoute;
 }
+
 int Graph::findNearestNode(int startNode, vector<int> destinationNodes)
 {
     vector<double> distance(totalNodes, numeric_limits<double>::max());
