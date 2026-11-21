@@ -11,23 +11,227 @@
 
 <body>
 
-    <h2>Smart Garbage Collection System</h2>
+    <div class="dashboard">
 
-    <div id="controls">
+        <header class="header">
 
-        <button id="showBoth">Show Both Routes</button>
+            <div class="logo">
+                <div class="logo-icon">SG</div>
 
-        <button id="showShortest">Shortest Route</button>
+                <div>
+                    <h2>Smart Garbage Collection</h2>
+                    <p>Route Optimization Dashboard</p>
+                </div>
+            </div>
 
-        <button id="showFastest">Fastest Route</button>
+            <div class="status">
+                <span class="status-dot"></span>
+                System Online
+            </div>
 
-        <button id="showCommon">Common Route</button>
+        </header>
+
+
+        <main>
+
+            <section class="welcome">
+
+                <div>
+                    <h1>Garbage Collection Dashboard</h1>
+
+                    <p>
+                        Plan and visualize optimized garbage
+                        collection routes in Islamabad.
+                    </p>
+                </div>
+
+            </section>
+
+
+            <section class="control-panel">
+
+                <h3>Route Planning</h3>
+
+                <p class="section-description">
+                    Enter your starting location and destination.
+                </p>
+
+
+                <div class="input-container">
+
+                    <div class="input-group">
+
+                        <label for="startNode">
+                            Starting Node
+                        </label>
+
+                        <input type="number" id="startNode" placeholder="Enter node ID (0-767)" min="0" max="767">
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="destination">
+                            Destination Road
+                        </label>
+
+                        <input type="text" id="destination" placeholder="Example: 7th Avenue">
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="priority">
+                            Collection Priority
+                        </label>
+
+                        <select id="priority">
+
+                            <option value="normal">
+                                Normal
+                            </option>
+
+                            <option value="urgent">
+                                Urgent
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <button id="calculateRoute">
+                    Calculate Route
+                </button>
+
+            </section>
+
+
+            <section class="results">
+
+                <h3>Route Information</h3>
+
+                <div class="result-container">
+
+                    <div class="result-card">
+
+                        <span class="result-icon">↔</span>
+
+                        <p>Shortest Distance</p>
+
+                        <h2 id="shortestDistance">--</h2>
+
+                        <span>Meters</span>
+
+                    </div>
+
+
+                    <div class="result-card">
+
+                        <span class="result-icon">◷</span>
+
+                        <p>Fastest Travel Time</p>
+
+                        <h2 id="fastestTime">--</h2>
+
+                        <span>Seconds</span>
+
+                    </div>
+
+
+                    <div class="result-card">
+
+                        <span class="result-icon">📍</span>
+
+                        <p>Destination Node</p>
+
+                        <h2 id="destinationNode">--</h2>
+
+                        <span>Graph Node</span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="map-section">
+
+                <div class="map-heading">
+
+                    <div>
+                        <h3>Islamabad Road Network</h3>
+
+                        <p>
+                            Visual representation of optimized routes
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div id="controls">
+
+                    <button id="showBoth">
+                        Show Both Routes
+                    </button>
+
+                    <button id="showShortest">
+                        Shortest Route
+                    </button>
+
+                    <button id="showFastest">
+                        Fastest Route
+                    </button>
+
+                    <button id="showCommon">
+                        Common Route
+                    </button>
+
+                </div>
+
+
+                <div id="map"></div>
+
+
+                <div class="legend">
+
+                    <span>
+                        <i class="red"></i>
+                        Shortest Route
+                    </span>
+
+                    <span>
+                        <i class="green"></i>
+                        Fastest Route
+                    </span>
+
+                    <span>
+                        <i class="yellow"></i>
+                        Common Route
+                    </span>
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+        <footer>
+            Smart Garbage Collection System | Islamabad
+        </footer>
 
     </div>
 
-    <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script src="script.js"></script>
 
 </body>

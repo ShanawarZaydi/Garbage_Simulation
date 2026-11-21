@@ -5,6 +5,32 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+
+// Collection Priority Interaction
+
+var prioritySelect = document.getElementById('priority');
+
+function updatePriorityColor() {
+
+    if (prioritySelect.value == 'urgent') {
+
+        prioritySelect.style.backgroundColor = '#E8D1C6';
+        prioritySelect.style.borderColor = '#B9785D';
+
+    }
+    else {
+
+        prioritySelect.style.backgroundColor = '#DCE8D8';
+        prioritySelect.style.borderColor = '#66866A';
+
+    }
+}
+
+prioritySelect.addEventListener('change', updatePriorityColor);
+
+updatePriorityColor();
+
+
 fetch('../data/graph.json')
     .then(response => response.json())
     .then(data => {
@@ -20,8 +46,8 @@ fetch('../data/graph.json')
 
             L.circleMarker([node.lat, node.lon], {
                 radius: 3,
-                color: 'blue',
-                fillColor: 'blue',
+                color: '#66866A',
+                fillColor: '#66866A',
                 fillOpacity: 0.7
             })
                 .bindPopup('Node ID: ' + node.id)
@@ -32,7 +58,7 @@ fetch('../data/graph.json')
         for (var i = 0; i < data.edges.length; i++) {
 
             L.polyline(data.edges[i].geometry, {
-                color: 'gray',
+                color: '#A9A39A',
                 weight: 2
             }).addTo(map);
         }
@@ -95,12 +121,12 @@ fetch('../data/graph.json')
 
                 // Create Route Layers
                 var shortestLayer = L.polyline(shortestPoints, {
-                    color: 'red',
+                    color: '#B9785D',
                     weight: 5
                 });
 
                 var fastestLayer = L.polyline(fastestPoints, {
-                    color: 'green',
+                    color: '#66866A',
                     weight: 5
                 });
 
@@ -130,7 +156,7 @@ fetch('../data/graph.json')
                         if (geometry != null) {
 
                             L.polyline(geometry, {
-                                color: 'yellow',
+                                color: '#D3A84D',
                                 weight: 7
                             })
                                 .bindPopup('Common Route')
@@ -149,7 +175,21 @@ fetch('../data/graph.json')
                     .bindPopup('Destination Point')
                     .addTo(map);
 
-                // Show Both Routes by Default
+
+                // Active Button Control
+                function setActiveButton(buttonId) {
+
+                    var buttons = document.querySelectorAll('#controls button');
+
+                    for (var i = 0; i < buttons.length; i++) {
+                        buttons[i].classList.remove('active');
+                    }
+
+                    document.getElementById(buttonId).classList.add('active');
+                }
+
+
+                // Show Both Routes
                 function showBothRoutes() {
 
                     map.removeLayer(shortestLayer);
@@ -159,7 +199,10 @@ fetch('../data/graph.json')
                     shortestLayer.addTo(map);
                     fastestLayer.addTo(map);
                     commonLayer.addTo(map);
+
+                    setActiveButton('showBoth');
                 }
+
 
                 // Show Shortest Route
                 function showShortestRoute() {
@@ -169,7 +212,10 @@ fetch('../data/graph.json')
                     map.removeLayer(commonLayer);
 
                     shortestLayer.addTo(map);
+
+                    setActiveButton('showShortest');
                 }
+
 
                 // Show Fastest Route
                 function showFastestRoute() {
@@ -179,7 +225,10 @@ fetch('../data/graph.json')
                     map.removeLayer(commonLayer);
 
                     fastestLayer.addTo(map);
+
+                    setActiveButton('showFastest');
                 }
+
 
                 // Show Common Route
                 function showCommonRoute() {
@@ -189,7 +238,10 @@ fetch('../data/graph.json')
                     map.removeLayer(commonLayer);
 
                     commonLayer.addTo(map);
+
+                    setActiveButton('showCommon');
                 }
+
 
                 // Connect Buttons
                 document.getElementById('showBoth').onclick = showBothRoutes;
@@ -200,8 +252,10 @@ fetch('../data/graph.json')
 
                 document.getElementById('showCommon').onclick = showCommonRoute;
 
+
                 // Display Both Routes Initially
                 showBothRoutes();
+
 
                 // Zoom to Routes
                 var allPoints = shortestPoints.concat(fastestPoints);
