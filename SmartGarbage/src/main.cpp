@@ -1,13 +1,14 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <nlohmann/json.hpp>
 #include "Graph.h"
 
 using namespace std;
 using json = nlohmann::json;
 
-int main()
+int main(int argc, char *argv[])
 {
     ifstream file("data/graph.json");
 
@@ -75,21 +76,22 @@ int main()
     cout << "Road Names Loaded: " << roadData.size() << endl;
 
     int startNode;
-
-    cout << "\nEnter Starting Node (0-" << totalNodes - 1 << "): ";
-    cin >> startNode;
-    cin.ignore();
-
-    if (startNode < 0 || startNode >= totalNodes)
-    {
-        cout << "\nInvalid Starting Node!" << endl;
-        return 1;
-    }
-
     string roadName;
 
-    cout << "Enter Destination Road: ";
-    getline(cin, roadName);
+    if (argc == 3)
+    {
+        startNode = stoi(argv[1]);
+        roadName = argv[2];
+    }
+    else
+    {
+        cout << "\nEnter Starting Node (0-" << totalNodes - 1 << "): ";
+        cin >> startNode;
+        cin.ignore();
+
+        cout << "Enter Destination Road: ";
+        getline(cin, roadName);
+    }
 
     while (roadName.length() > 0 && roadName[0] == ' ')
     {
@@ -99,6 +101,12 @@ int main()
     while (roadName.length() > 0 && roadName[roadName.length() - 1] == ' ')
     {
         roadName.erase(roadName.length() - 1, 1);
+    }
+
+    if (startNode < 0 || startNode >= totalNodes)
+    {
+        cout << "\nInvalid Starting Node!" << endl;
+        return 1;
     }
 
     vector<int> destinationNodes = roadTrie.getRoadNodes(roadName);
