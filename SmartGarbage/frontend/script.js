@@ -33,74 +33,137 @@ fetch('../data/graph.json')
 
             var edge = data.edges[i];
 
-            var roadPoints = [];
-
-            for (var j = 0; j < edge.geometry.length; j++) {
-                roadPoints.push(edge.geometry[j]);
-            }
-
-            L.polyline(roadPoints, {
+            L.polyline(edge.geometry, {
                 color: 'gray',
                 weight: 2
             }).addTo(map);
         }
 
-        // Load Calculated Route
         fetch('../data/route.json')
             .then(response => response.json())
             .then(routeData => {
 
-                var shortestPoints = [];
+                // Find Edge Geometry
+                function getEdgeGeometry(from, to) {
 
-                // Find Actual Road Geometry
-                for (var i = 0; i < routeData.shortestRoute.length - 1; i++) {
+                    for (var i = 0; i < data.edges.length; i++) {
 
-                    var currentNode = routeData.shortestRoute[i];
-                    var nextNode = routeData.shortestRoute[i + 1];
+                        var edge = data.edges[i];
 
-                    var edgeFound = false;
-
-                    for (var j = 0; j < data.edges.length; j++) {
-
-                        var edge = data.edges[j];
-
-                        if (edge.from == currentNode && edge.to == nextNode) {
-
-                            for (var k = 0; k < edge.geometry.length; k++) {
-                                shortestPoints.push(edge.geometry[k]);
-                            }
-
-                            edgeFound = true;
-                            break;
+                        if (edge.from == from && edge.to == to) {
+                            return edge.geometry;
                         }
                     }
 
-                    // Fallback if edge geometry is not found
-                    if (!edgeFound) {
-
-                        if (shortestPoints.length == 0) {
-                            shortestPoints.push(nodeCoordinates[currentNode]);
-                        }
-
-                        shortestPoints.push(nodeCoordinates[nextNode]);
-                    }
+                    return null;
                 }
 
-                // Display Actual Shortest Route
+                // Get Complete Route Geometry
+                function getRouteGeometry(route) {
+
+                    var routePoints = [];
+
+                    for (var i = 0; i < route.length - 1; i++) {
+
+                        var geometry = getEdgeGeometry(route[i], route[i + 1]);
+
+                        if (geometry != null) {
+
+                            for (var j = 0; j < geometry.length; j++) {
+                                routePoints.push(geometry[j]);
+                            }
+                        }
+                        else {
+
+                            if (routePoints.length == 0) {
+                                routePoints.push(nodeCoordinates[route[i]]);
+                            }
+
+                            routePoints.push(nodeCoordinates[route[i + 1]]);
+                        }
+                    }
+
+                    return routePoints;
+                }
+
+                var shortestRoute = routeData.shortestRoute;
+                var fastestRoute = routeData.fastestRoute;
+
+                var shortestPoints = getRouteGeometry(shortestRoute);
+                var fastestPoints = getRouteGeometry(fastestRoute);
+
+                // Display Shortest Route
                 L.polyline(shortestPoints, {
                     color: 'red',
                     weight: 5
                 }).addTo(map);
 
-                // Zoom Map to Route
-                map.fitBounds(L.latLngBounds(shortestPoints));
+                // Display Fastest Route
+                L.polyline(fastestPoints, {
+                    color: 'green',
+                    weight: 5
+                }).addTo(map);
 
-                console.log('Shortest Route:', routeData.shortestRoute);
-                console.log('Actual Road Geometry Displayed!');
+                // Store Fastest Route Edges
+                var fastestEdges = {};
+
+                for (var i = 0; i < fastestRoute.length - 1; i++) {
+
+                    var key = fastestRoute[i] + '-' + fastestRoute[i + 1];
+
+                    fastestEdges[key] = true;
+                }
+
+                // Highlight Common Road Segments
+                var commonCount = 0;
+
+                for (var i = 0; i < shortestRoute.length - 1; i++) {
+
+                    var key = shortestRoute[i] + '-' + shortestRoute[i + 1];
+
+                    if (fastestEdges[key]) {
+
+                        var geometry = getEdgeGeometry(
+                            shortestRoute[i],
+                            shortestRoute[i + 1]
+                        );
+
+                        if (geometry != null) {
+
+                            L.polyline(geometry, {
+                                color: 'yellow',
+                                weight: 7
+                            })
+                                .bindPopup('Common Route')
+                                .addTo(map);
+
+                            commonCount++;
+                        }
+                    }
+                }
+
+                // Start Marker
+                L.marker(nodeCoordinates[routeData.startNode])
+                    .bindPopup('Starting Point')
+                    .addTo(map);
+
+                // Destination Marker
+                L.marker(nodeCoordinates[routeData.destinationNode])
+                    .bindPopup('Destination Point')
+                    .addTo(map);
+
+                // Zoom to Routes
+                var allPoints = shortestPoints.concat(fastestPoints);
+
+                map.fitBounds(L.latLngBounds(allPoints));
+
+                console.log('Shortest Route Displayed!');
+                console.log('Fastest Route Displayed!');
+                console.log('Common Road Segments:', commonCount);
 
             })
             .catch(error => {
-                console.log('Error Loading Route:', error);
+                console.log('Error Loading Routes:', error);
             });
 
         console.log('Total Nodes:', data.nodes.length);
