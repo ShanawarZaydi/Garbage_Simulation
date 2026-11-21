@@ -43,7 +43,17 @@ def calculate_route():
         )
 
         if result.returncode != 0:
-            return jsonify({"error": result.stdout or result.stderr}), 400
+            return (
+                jsonify(
+                    {
+                        "error": "C++ program failed",
+                        "returncode": result.returncode,
+                        "output": result.stdout,
+                        "error_details": result.stderr,
+                    }
+                ),
+                400,
+            )
 
         route_file = project_folder / "data" / "route.json"
 
