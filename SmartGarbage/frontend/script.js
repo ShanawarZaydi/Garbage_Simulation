@@ -98,6 +98,57 @@ fetch('../data/graph.json')
         }
 
         console.log('Graph Loaded Successfully!');
+        // Load Garbage Bins
+
+        fetch('../data/bins.json')
+            .then(response => response.json())
+            .then(data => {
+
+                for (var i = 0; i < data.bins.length; i++) {
+
+                    var bin = data.bins[i];
+
+                    var binLocation = nodeCoordinates[bin.node];
+
+                    if (binLocation == null) {
+                        continue;
+                    }
+
+                    var binColor;
+
+                    if (bin.status.toLowerCase() == 'empty') {
+                        binColor = '#66866A';
+                    }
+                    else if (bin.status.toLowerCase() == 'half full') {
+                        binColor = '#D3A84D';
+                    }
+                    else {
+                        binColor = '#B9785D';
+                    }
+
+                    L.circleMarker(binLocation, {
+
+                        radius: 9,
+                        color: '#FFFFFF',
+                        weight: 2,
+                        fillColor: binColor,
+                        fillOpacity: 1
+
+                    })
+                        .bindPopup(
+                            '<b>Garbage Bin #' + bin.id + '</b>' +
+                            '<br>Node: ' + bin.node +
+                            '<br>Status: ' + bin.status
+                        )
+                        .addTo(map);
+                }
+
+                console.log('Garbage Bins Loaded Successfully!');
+
+            })
+            .catch(error => {
+                console.log('Error Loading Garbage Bins:', error);
+            });
 
     })
     .catch(error => {

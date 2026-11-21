@@ -1,0 +1,29 @@
+{
+    "bins": [
+        {
+            "id": 1,
+            "node": 45,
+            "status": "Full"
+        },
+        {
+            "id": 2,
+            "node": 76,
+            "status": "Half Full"
+        },
+        {
+            "id": 3,
+            "node": 215,
+            "status": "Empty"
+        },
+        {
+            "id": 4,
+            "node": 418,
+            "status": "Full"
+        },
+        {
+            "id": 5,
+            "node": 525,
+            "status": "Half Full"
+        }
+    ]
+}
