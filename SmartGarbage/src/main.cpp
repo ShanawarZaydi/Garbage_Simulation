@@ -195,6 +195,10 @@ int main(int argc, char *argv[])
     routeData["shortestRoute"] = shortestRoute;
     routeData["fastestRoute"] = fastestRoute;
 
+    routeData["priority"] = priority;
+    routeData["recommendedRoute"] = recommendedRoute;
+    routeData["recommendationReason"] = recommendationReason;
+
     ofstream routeFile("data/route.json");
 
     if (!routeFile.is_open())

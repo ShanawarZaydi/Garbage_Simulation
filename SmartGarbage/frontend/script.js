@@ -295,10 +295,10 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
         headers: {
             'Content-Type': 'application/json'
         },
-
         body: JSON.stringify({
             startNode: Number(startNode),
-            destination: destination
+            destination: destination,
+            priority: prioritySelect.value
         })
 
     })

@@ -27,6 +27,9 @@ def calculate_route():
     try:
         start_node = int(data.get("startNode"))
         destination = str(data.get("destination", "")).strip()
+        priority = str(data.get("priority", "normal")).strip().lower()
+        if priority not in ["normal", "urgent"]:
+            return jsonify({"error": "Invalid collection priority"}), 400
 
         if start_node < 0 or start_node > 767:
             return jsonify({"error": "Invalid starting node"}), 400
@@ -35,7 +38,7 @@ def calculate_route():
             return jsonify({"error": "Destination is required"}), 400
 
         result = subprocess.run(
-            [str(project_folder / "main.exe"), str(start_node), destination],
+            [str(project_folder / "main.exe"), str(start_node), destination, priority],
             cwd=project_folder,
             capture_output=True,
             text=True,
