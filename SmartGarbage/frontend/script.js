@@ -322,6 +322,21 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
             var fastestRoute = routeData.fastestRoute;
 
             var destinationNode = routeData.destinationNode;
+            // Update AI Agent Recommendation
+
+            document.getElementById('agentPriority').innerText =
+                routeData.priority.toUpperCase();
+
+            document.getElementById('agentDecision').innerText =
+                routeData.priority == 'urgent'
+                    ? 'Fastest Route Selected'
+                    : 'Shortest Route Selected';
+
+            document.getElementById('agentRoute').innerText =
+                routeData.recommendedRoute.join(' -> ');
+
+            document.getElementById('agentReason').innerText =
+                routeData.recommendationReason;
 
             // Remove Previous Routes
 
