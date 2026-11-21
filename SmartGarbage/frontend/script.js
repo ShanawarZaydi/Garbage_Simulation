@@ -435,6 +435,43 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
 
             var fastestTime = calculateRouteValue(fastestRoute, 'time');
 
+            // Calculate Route Comparison
+
+            var shortestTime = calculateRouteValue(shortestRoute, 'time');
+
+            var fastestDistance = calculateRouteValue(fastestRoute, 'length');
+
+
+            // Update Comparison Cards
+
+            document.getElementById('shortestRouteDistance').innerText =
+                shortestDistance.toFixed(2) + ' m';
+
+            document.getElementById('shortestRouteTime').innerText =
+                shortestTime.toFixed(2) + ' sec';
+
+
+            document.getElementById('fastestRouteDistance').innerText =
+                fastestDistance.toFixed(2) + ' m';
+
+            document.getElementById('fastestRouteTime').innerText =
+                fastestTime.toFixed(2) + ' sec';
+
+
+            // Calculate Differences
+
+            var distanceDifference = Math.abs(shortestDistance - fastestDistance);
+
+            var timeDifference = Math.abs(shortestTime - fastestTime);
+
+
+            // Display Differences
+
+            document.getElementById('distanceDifference').innerText =
+                distanceDifference.toFixed(2) + ' meters';
+
+            document.getElementById('timeDifference').innerText =
+                timeDifference.toFixed(2) + ' seconds';
 
             // Update Dashboard
 
@@ -446,6 +483,16 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
 
             document.getElementById('destinationNode').innerText =
                 destinationNode;
+            // Update Current Route Details
+
+            document.getElementById('routeStartNode').innerText =
+                startNode;
+
+            document.getElementById('routeDestinationRoad').innerText =
+                destination;
+
+            document.getElementById('routePriority').innerText =
+                prioritySelect.value.toUpperCase();
 
 
             // Display Both Routes
