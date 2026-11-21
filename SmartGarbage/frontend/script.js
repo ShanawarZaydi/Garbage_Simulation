@@ -52,23 +52,51 @@ fetch('../data/graph.json')
 
                 var shortestPoints = [];
 
-                for (var i = 0; i < routeData.shortestRoute.length; i++) {
+                // Find Actual Road Geometry
+                for (var i = 0; i < routeData.shortestRoute.length - 1; i++) {
 
-                    var nodeID = routeData.shortestRoute[i];
+                    var currentNode = routeData.shortestRoute[i];
+                    var nextNode = routeData.shortestRoute[i + 1];
 
-                    if (nodeCoordinates[nodeID]) {
-                        shortestPoints.push(nodeCoordinates[nodeID]);
+                    var edgeFound = false;
+
+                    for (var j = 0; j < data.edges.length; j++) {
+
+                        var edge = data.edges[j];
+
+                        if (edge.from == currentNode && edge.to == nextNode) {
+
+                            for (var k = 0; k < edge.geometry.length; k++) {
+                                shortestPoints.push(edge.geometry[k]);
+                            }
+
+                            edgeFound = true;
+                            break;
+                        }
+                    }
+
+                    // Fallback if edge geometry is not found
+                    if (!edgeFound) {
+
+                        if (shortestPoints.length == 0) {
+                            shortestPoints.push(nodeCoordinates[currentNode]);
+                        }
+
+                        shortestPoints.push(nodeCoordinates[nextNode]);
                     }
                 }
 
-                // Display Shortest Route
+                // Display Actual Shortest Route
                 L.polyline(shortestPoints, {
                     color: 'red',
                     weight: 5
                 }).addTo(map);
 
+                // Zoom Map to Route
+                map.fitBounds(L.latLngBounds(shortestPoints));
+
                 console.log('Shortest Route:', routeData.shortestRoute);
-                console.log('Shortest Route Displayed!');
+                console.log('Actual Road Geometry Displayed!');
 
             })
             .catch(error => {
