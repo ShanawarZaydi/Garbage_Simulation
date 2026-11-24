@@ -72,5 +72,52 @@ def calculate_route():
         return jsonify({"error": str(error)}), 500
 
 
+@app.route("/update-bin-status", methods=["POST"])
+def update_bin_status():
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
+    try:
+        bin_id = int(data.get("id"))
+        status = str(data.get("status", "")).strip()
+
+        if status not in ["Empty", "Half Full", "Full"]:
+            return jsonify({"error": "Invalid bin status"}), 400
+
+        bins_file = project_folder / "data" / "bins.json"
+
+        with open(bins_file, "r") as file:
+            bin_data = json.load(file)
+
+        found = False
+
+        for bin in bin_data["bins"]:
+
+            if bin["id"] == bin_id:
+
+                bin["status"] = status
+                found = True
+                break
+
+        if not found:
+            return jsonify({"error": "Bin not found"}), 404
+
+        with open(bins_file, "w") as file:
+            json.dump(bin_data, file, indent=4)
+
+        return jsonify(
+            {
+                "message": "Bin status updated successfully",
+                "bin": {"id": bin_id, "status": status},
+            }
+        )
+
+    except Exception as error:
+        return jsonify({"error": str(error)}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

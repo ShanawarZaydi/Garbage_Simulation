@@ -37,6 +37,149 @@ var commonLayer = null;
 var startMarker = null;
 var destinationMarker = null;
 
+
+// Garbage Bin Management
+
+var binMarkers = {};
+
+
+// Get Bin Color
+
+function getBinColor(status) {
+
+    if (status == 'Empty') {
+        return '#00ff22';
+    }
+    else if (status == 'Half Full') {
+        return '#ffae00';
+    }
+    else {
+        return '#ff4d00';
+    }
+}
+
+
+// Get Bin Popup
+
+function getBinPopup(bin) {
+
+    return `
+        <div class="bin-popup">
+
+            <b>Garbage Bin #${bin.id}</b>
+
+            <p>Node: ${bin.node}</p>
+
+            <p>Current Status: ${bin.status}</p>
+
+            <select id="binStatusSelect">
+                <option value="Empty" ${bin.status == 'Empty' ? 'selected' : ''}>Empty</option>
+                <option value="Half Full" ${bin.status == 'Half Full' ? 'selected' : ''}>Half Full</option>
+                <option value="Full" ${bin.status == 'Full' ? 'selected' : ''}>Full</option>
+            </select>
+
+            <button id="updateBinStatus">
+                Update Status
+            </button>
+
+        </div>
+    `;
+}
+
+
+// Add Garbage Bin to Map
+
+function addGarbageBin(bin) {
+
+    var binLocation = nodeCoordinates[bin.node];
+
+    if (binLocation == null) {
+        return;
+    }
+
+    var marker = L.circleMarker(binLocation, {
+        radius: 12,
+        color: '#FFFFFF',
+        weight: 3,
+        fillColor: getBinColor(bin.status),
+        fillOpacity: 1
+
+    });
+
+    marker.bindPopup(getBinPopup(bin));
+
+    // Update Bin Status Button
+
+    marker.on('popupopen', function () {
+
+        var updateButton = document.getElementById('updateBinStatus');
+
+        updateButton.onclick = function () {
+
+            var newStatus = document.getElementById('binStatusSelect').value;
+
+            fetch('http://127.0.0.1:5000/update-bin-status', {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify({
+                    id: bin.id,
+                    status: newStatus
+                })
+
+            })
+
+                .then(response => {
+
+                    return response.json().then(data => {
+
+                        if (!response.ok) {
+                            throw new Error(data.error);
+                        }
+
+                        return data;
+                    });
+
+                })
+
+                .then(data => {
+
+                    bin.status = data.bin.status;
+
+                    marker.setStyle({
+                        fillColor: getBinColor(bin.status)
+                    });
+
+                    marker.closePopup();
+
+                    marker.setPopupContent(getBinPopup(bin));
+
+                    marker.openPopup();
+
+                    console.log('Bin Status Updated Successfully!');
+
+                })
+
+                .catch(error => {
+
+                    alert(error.message);
+
+                });
+
+        };
+
+    });
+
+    marker.addTo(map);
+
+    binMarkers[bin.id] = marker;
+}
+
+
 // Load Road Name Suggestions
 
 fetch('../data/road_names.json')
@@ -60,6 +203,7 @@ fetch('../data/road_names.json')
     .catch(error => {
         console.log('Error Loading Road Names:', error);
     });
+
 
 // Load Graph
 
@@ -98,6 +242,8 @@ fetch('../data/graph.json')
         }
 
         console.log('Graph Loaded Successfully!');
+
+
         // Load Garbage Bins
 
         fetch('../data/bins.json')
@@ -106,48 +252,17 @@ fetch('../data/graph.json')
 
                 for (var i = 0; i < data.bins.length; i++) {
 
-                    var bin = data.bins[i];
+                    addGarbageBin(data.bins[i]);
 
-                    var binLocation = nodeCoordinates[bin.node];
-
-                    if (binLocation == null) {
-                        continue;
-                    }
-
-                    var binColor;
-
-                    if (bin.status.toLowerCase() == 'empty') {
-                        binColor = '#66866A';
-                    }
-                    else if (bin.status.toLowerCase() == 'half full') {
-                        binColor = '#D3A84D';
-                    }
-                    else {
-                        binColor = '#B9785D';
-                    }
-
-                    L.circleMarker(binLocation, {
-
-                        radius: 9,
-                        color: '#FFFFFF',
-                        weight: 2,
-                        fillColor: binColor,
-                        fillOpacity: 1
-
-                    })
-                        .bindPopup(
-                            '<b>Garbage Bin #' + bin.id + '</b>' +
-                            '<br>Node: ' + bin.node +
-                            '<br>Status: ' + bin.status
-                        )
-                        .addTo(map);
                 }
 
                 console.log('Garbage Bins Loaded Successfully!');
 
             })
             .catch(error => {
+
                 console.log('Error Loading Garbage Bins:', error);
+
             });
 
     })
@@ -346,6 +461,7 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
         headers: {
             'Content-Type': 'application/json'
         },
+
         body: JSON.stringify({
             startNode: Number(startNode),
             destination: destination,
@@ -373,6 +489,8 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
             var fastestRoute = routeData.fastestRoute;
 
             var destinationNode = routeData.destinationNode;
+
+
             // Update AI Agent Recommendation
 
             document.getElementById('agentPriority').innerText =
@@ -388,6 +506,7 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
 
             document.getElementById('agentReason').innerText =
                 routeData.recommendationReason;
+
 
             // Remove Previous Routes
 
@@ -458,8 +577,6 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
             }
 
 
-            // Starting Point
-
             // Starting Point Highlight
 
             startMarker = L.circleMarker(nodeCoordinates[Number(startNode)], {
@@ -495,11 +612,14 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
                     direction: 'top'
                 })
                 .addTo(map);
+
+
             // Calculate Route Information
 
             var shortestDistance = calculateRouteValue(shortestRoute, 'length');
 
             var fastestTime = calculateRouteValue(fastestRoute, 'time');
+
 
             // Calculate Route Comparison
 
@@ -539,6 +659,7 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
             document.getElementById('timeDifference').innerText =
                 timeDifference.toFixed(2) + ' seconds';
 
+
             // Update Dashboard
 
             document.getElementById('shortestDistance').innerText =
@@ -549,6 +670,8 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
 
             document.getElementById('destinationNode').innerText =
                 destinationNode;
+
+
             // Update Current Route Details
 
             document.getElementById('routeStartNode').innerText =
