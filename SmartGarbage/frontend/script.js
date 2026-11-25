@@ -49,6 +49,7 @@ var vehicleMarkers = {};
 var lastMultiBinRoute = null;
 var simulationRoute = null;
 var dispatchedVehicle = null;
+var lastSelectedBinIds = [];
 var simulationTimer = null;
 var simulationIndex = 0;
 var simulationRunning = false;
@@ -359,6 +360,8 @@ document.getElementById('planMultiBinRoute').addEventListener('click', function 
 
             showMultiBinRoute(routeData);
 
+            lastSelectedBinIds = binIds;
+
             console.log('Multi-Bin Route Loaded Successfully!');
 
         })
@@ -606,7 +609,8 @@ function dispatchVehicle() {
         },
 
         body: JSON.stringify({
-            targetNode: targetNode
+            targetNode: targetNode,
+            binIds: lastSelectedBinIds
         })
 
     })
@@ -652,7 +656,8 @@ function dispatchVehicle() {
             document.getElementById('vehicleName').innerText = data.vehicleName;
 
             document.getElementById('dispatchInfo').innerText =
-                'Nearest vehicle: ' + data.vehicleName +
+                'Nearest eligible: ' + data.vehicleName +
+                ' | Waste: ' + data.totalWaste + ' units' +
                 ' (approach distance ' + data.distance.toFixed(2) + ' m)';
 
             stopSimulationTimer();

@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     {
         if (argc < 3)
         {
-            cout << "\nUsage: main.exe dispatch <targetNode>" << endl;
+            cout << "\nUsage: main.exe dispatch <targetNode> [binId1] [binId2] ..." << endl;
             return 1;
         }
 
@@ -225,6 +225,33 @@ int main(int argc, char *argv[])
         json vehicleData;
         vehicleFile >> vehicleData;
         vehicleFile.close();
+
+        int totalWaste = 0;
+        if (argc > 3)
+        {
+            ifstream binFile("data/bins.json");
+            if (binFile.is_open())
+            {
+                json binData;
+                binFile >> binData;
+                binFile.close();
+                for (int i = 2; i < argc; i++)
+                {
+                    int binId = stoi(argv[i]);
+                    for (auto &b : binData["bins"])
+                    {
+                        if (b["id"] == binId)
+                        {
+                            string status = b["status"];
+                            if (status == "Full") totalWaste += 100;
+                            else if (status == "Half Full") totalWaste += 50;
+                            // Empty => 0, nothing added
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         int bestVehicleId = -1;
         string bestVehicleName;
@@ -276,6 +303,7 @@ int main(int argc, char *argv[])
         cout << "Assigned Vehicle: " << bestVehicleName << endl;
         cout << "Vehicle Node: " << bestVehicleNode << endl;
         cout << "Approach Distance: " << bestDistance << " meters" << endl;
+        cout << "Total Waste (from selected bins): " << totalWaste << " units" << endl;
 
         json dispatchData;
 
@@ -285,6 +313,7 @@ int main(int argc, char *argv[])
         dispatchData["vehicleNode"] = bestVehicleNode;
         dispatchData["distance"] = bestDistance;
         dispatchData["approachRoute"] = bestApproachRoute;
+        dispatchData["totalWaste"] = totalWaste;
 
         ofstream dispatchFile("data/dispatch.json");
 

@@ -222,8 +222,15 @@ def dispatch_vehicle():
         if target_node < 0 or target_node > 767:
             return jsonify({"error": "Invalid target node"}), 400
 
+        bin_ids = data.get("binIds", [])
+
+        command = [str(project_folder / "main.exe"), "dispatch", str(target_node)]
+
+        for bin_id in bin_ids:
+            command.append(str(bin_id))
+
         result = subprocess.run(
-            [str(project_folder / "main.exe"), "dispatch", str(target_node)],
+            command,
             cwd=project_folder,
             capture_output=True,
             text=True,
