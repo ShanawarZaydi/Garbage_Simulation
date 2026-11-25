@@ -1,0 +1,28 @@
+{
+    "vehicles": [
+        {
+            "id": 1,
+            "name": "Truck 1",
+            "type": "truck",
+            "node": 4,
+            "status": "Idle",
+            "available": true
+        },
+        {
+            "id": 2,
+            "name": "Truck 2",
+            "type": "truck",
+            "node": 200,
+            "status": "Idle",
+            "available": true
+        },
+        {
+            "id": 3,
+            "name": "Truck 3",
+            "type": "truck",
+            "node": 500,
+            "status": "Busy",
+            "available": false
+        }
+    ]
+}

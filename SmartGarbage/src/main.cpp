@@ -198,6 +198,110 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    if (argc >= 2 && string(argv[1]) == "dispatch")
+    {
+        if (argc < 3)
+        {
+            cout << "\nUsage: main.exe dispatch <targetNode>" << endl;
+            return 1;
+        }
+
+        int targetNode = stoi(argv[2]);
+
+        if (targetNode < 0 || targetNode >= totalNodes)
+        {
+            cout << "\nInvalid Target Node!" << endl;
+            return 1;
+        }
+
+        ifstream vehicleFile("data/vehicles.json");
+
+        if (!vehicleFile.is_open())
+        {
+            cout << "\nVehicles File Not Found!" << endl;
+            return 1;
+        }
+
+        json vehicleData;
+        vehicleFile >> vehicleData;
+        vehicleFile.close();
+
+        int bestVehicleId = -1;
+        string bestVehicleName;
+        int bestVehicleNode = -1;
+        double bestDistance = 1000000000.0;
+        vector<int> bestApproachRoute;
+
+        for (int i = 0; i < vehicleData["vehicles"].size(); i++)
+        {
+            bool available = vehicleData["vehicles"][i]["available"];
+
+            if (!available)
+            {
+                continue;
+            }
+
+            int vehicleNode = vehicleData["vehicles"][i]["node"];
+
+            vector<int> approachRoute = cityGraph.Dijkstra(vehicleNode, targetNode, false);
+
+            if (approachRoute.size() == 0)
+            {
+                continue;
+            }
+
+            double distance = cityGraph.getRouteDistance(approachRoute);
+
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                bestVehicleId = vehicleData["vehicles"][i]["id"];
+                bestVehicleName = vehicleData["vehicles"][i]["name"];
+                bestVehicleNode = vehicleNode;
+                bestApproachRoute = approachRoute;
+            }
+        }
+
+        if (bestVehicleId == -1)
+        {
+            cout << "\nNo Available Vehicle Can Reach The Target!" << endl;
+            return 1;
+        }
+
+        cout << "\n==================================" << endl;
+        cout << " VEHICLE DISPATCH" << endl;
+        cout << "==================================" << endl;
+
+        cout << "Target Node: " << targetNode << endl;
+        cout << "Assigned Vehicle: " << bestVehicleName << endl;
+        cout << "Vehicle Node: " << bestVehicleNode << endl;
+        cout << "Approach Distance: " << bestDistance << " meters" << endl;
+
+        json dispatchData;
+
+        dispatchData["targetNode"] = targetNode;
+        dispatchData["vehicleId"] = bestVehicleId;
+        dispatchData["vehicleName"] = bestVehicleName;
+        dispatchData["vehicleNode"] = bestVehicleNode;
+        dispatchData["distance"] = bestDistance;
+        dispatchData["approachRoute"] = bestApproachRoute;
+
+        ofstream dispatchFile("data/dispatch.json");
+
+        if (!dispatchFile.is_open())
+        {
+            cout << "\nUnable to Create Dispatch File!" << endl;
+            return 1;
+        }
+
+        dispatchFile << dispatchData.dump(4);
+        dispatchFile.close();
+
+        cout << "\nDispatch Saved Successfully!" << endl;
+
+        return 0;
+    }
+
     ifstream roadFile("data/road_names.json");
 
     if (!roadFile.is_open())

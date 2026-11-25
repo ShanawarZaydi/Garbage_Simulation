@@ -44,6 +44,16 @@ var binMarkers = {};
 var allBins = [];
 var multiBinLayer = null;
 
+var allVehicles = [];
+var vehicleMarkers = {};
+var lastMultiBinRoute = null;
+var simulationRoute = null;
+var dispatchedVehicle = null;
+var simulationTimer = null;
+var simulationIndex = 0;
+var simulationRunning = false;
+var simulationSpeed = 300;
+
 
 // Get Bin Color
 
@@ -277,6 +287,14 @@ function showMultiBinRoute(routeData) {
     if (routePoints.length > 0) {
         map.fitBounds(L.latLngBounds(routePoints));
     }
+
+    lastMultiBinRoute = routeData.fullRoute;
+    simulationRoute = lastMultiBinRoute;
+    dispatchedVehicle = null;
+
+    document.getElementById('dispatchInfo').innerText = 'No vehicle dispatched yet.';
+
+    resetSimulation();
 }
 
 
@@ -359,6 +377,317 @@ document.getElementById('planMultiBinRoute').addEventListener('click', function 
         });
 
 });
+
+
+// Add Vehicle to Map
+
+function addVehicle(vehicle) {
+
+    var location = nodeCoordinates[vehicle.node];
+
+    if (location == null) {
+        return;
+    }
+
+    var marker = L.circleMarker(location, {
+        radius: 11,
+        color: '#FFFFFF',
+        weight: 3,
+        fillColor: '#2F4F6F',
+        fillOpacity: 1
+    });
+
+    marker.bindTooltip(vehicle.name, {
+        direction: 'top'
+    });
+
+    marker.addTo(map);
+
+    vehicleMarkers[vehicle.id] = marker;
+}
+
+
+// Vehicle Simulation
+
+function getTruck() {
+
+    if (dispatchedVehicle != null) {
+        return dispatchedVehicle;
+    }
+
+    if (allVehicles.length > 0) {
+        return allVehicles[0];
+    }
+
+    return null;
+}
+
+
+function moveTruckToNode(node) {
+
+    var truck = getTruck();
+
+    if (truck == null) {
+        return;
+    }
+
+    var marker = vehicleMarkers[truck.id];
+
+    if (marker == null) {
+        return;
+    }
+
+    if (nodeCoordinates[node] != null) {
+        marker.setLatLng(nodeCoordinates[node]);
+        marker.bringToFront();
+    }
+}
+
+
+function updateSimulationStatus(text) {
+
+    var truck = getTruck();
+
+    if (truck != null) {
+        truck.status = text;
+    }
+
+    document.getElementById('vehicleStatus').innerText = text;
+}
+
+
+function updateSimulationProgress() {
+
+    if (simulationRoute == null) {
+        document.getElementById('vehicleProgress').innerText = '--';
+        return;
+    }
+
+    var totalSteps = simulationRoute.length - 1;
+    var percent = 0;
+
+    if (totalSteps > 0) {
+        percent = Math.round((simulationIndex / totalSteps) * 100);
+    }
+
+    document.getElementById('vehicleProgress').innerText =
+        percent + '% (Node ' + simulationRoute[simulationIndex] + ')';
+}
+
+
+function stopSimulationTimer() {
+
+    if (simulationTimer != null) {
+        clearInterval(simulationTimer);
+        simulationTimer = null;
+    }
+}
+
+
+function resetSimulation() {
+
+    stopSimulationTimer();
+
+    simulationRunning = false;
+    simulationIndex = 0;
+
+    var truck = getTruck();
+
+    if (truck != null) {
+        document.getElementById('vehicleName').innerText = truck.name;
+    }
+
+    if (simulationRoute != null && simulationRoute.length > 0) {
+
+        moveTruckToNode(simulationRoute[0]);
+
+        updateSimulationStatus('Ready');
+        updateSimulationProgress();
+    }
+}
+
+
+function startSimulation() {
+
+    var truck = getTruck();
+
+    if (truck == null) {
+        alert('Vehicle data is not loaded yet.');
+        return;
+    }
+
+    if (simulationRoute == null) {
+        alert('Please plan a multi-bin route first.');
+        return;
+    }
+
+    if (simulationRunning) {
+        return;
+    }
+
+    if (simulationIndex >= simulationRoute.length - 1) {
+        simulationIndex = 0;
+        moveTruckToNode(simulationRoute[0]);
+    }
+
+    simulationRunning = true;
+
+    updateSimulationStatus('Moving');
+    updateSimulationProgress();
+
+    simulationTimer = setInterval(function () {
+
+        if (simulationIndex >= simulationRoute.length - 1) {
+
+            stopSimulationTimer();
+
+            simulationRunning = false;
+
+            updateSimulationStatus('Route Completed');
+
+            return;
+        }
+
+        simulationIndex++;
+
+        moveTruckToNode(simulationRoute[simulationIndex]);
+
+        updateSimulationProgress();
+
+        if (simulationIndex >= simulationRoute.length - 1) {
+
+            stopSimulationTimer();
+
+            simulationRunning = false;
+
+            updateSimulationStatus('Route Completed');
+        }
+
+    }, simulationSpeed);
+}
+
+
+function pauseSimulation() {
+
+    if (!simulationRunning) {
+        return;
+    }
+
+    stopSimulationTimer();
+
+    simulationRunning = false;
+
+    updateSimulationStatus('Paused');
+}
+
+
+// Dispatch Nearest Available Vehicle
+
+function dispatchVehicle() {
+
+    if (lastMultiBinRoute == null) {
+        alert('Please plan a multi-bin route first.');
+        return;
+    }
+
+    var targetNode = lastMultiBinRoute[0];
+
+    var button = document.getElementById('dispatchVehicle');
+
+    button.disabled = true;
+    button.innerText = 'Dispatching...';
+
+    fetch('http://127.0.0.1:5000/dispatch-vehicle', {
+
+        method: 'POST',
+
+        headers: {
+            'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify({
+            targetNode: targetNode
+        })
+
+    })
+
+        .then(response => {
+
+            return response.json().then(data => {
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                return data;
+            });
+
+        })
+
+        .then(data => {
+
+            var vehicle = null;
+
+            for (var i = 0; i < allVehicles.length; i++) {
+                if (allVehicles[i].id == data.vehicleId) {
+                    vehicle = allVehicles[i];
+                    break;
+                }
+            }
+
+            dispatchedVehicle = vehicle;
+
+            var combinedRoute = [];
+
+            for (var i = 0; i < data.approachRoute.length; i++) {
+                combinedRoute.push(data.approachRoute[i]);
+            }
+
+            for (var i = 1; i < lastMultiBinRoute.length; i++) {
+                combinedRoute.push(lastMultiBinRoute[i]);
+            }
+
+            simulationRoute = combinedRoute;
+
+            document.getElementById('vehicleName').innerText = data.vehicleName;
+
+            document.getElementById('dispatchInfo').innerText =
+                'Nearest vehicle: ' + data.vehicleName +
+                ' (approach distance ' + data.distance.toFixed(2) + ' m)';
+
+            stopSimulationTimer();
+
+            simulationRunning = false;
+            simulationIndex = 0;
+
+            moveTruckToNode(simulationRoute[0]);
+
+            updateSimulationStatus('Dispatched');
+            updateSimulationProgress();
+
+            console.log('Vehicle Dispatched Successfully!');
+
+        })
+
+        .catch(error => {
+
+            alert(error.message);
+
+        })
+
+        .finally(() => {
+
+            button.disabled = false;
+            button.innerText = 'Dispatch Nearest Vehicle';
+
+        });
+}
+
+
+document.getElementById('dispatchVehicle').onclick = dispatchVehicle;
+document.getElementById('startSimulation').onclick = startSimulation;
+document.getElementById('pauseSimulation').onclick = pauseSimulation;
+document.getElementById('resetSimulation').onclick = resetSimulation;
 
 
 // Load Road Name Suggestions
@@ -447,6 +776,37 @@ fetch('../data/graph.json')
             .catch(error => {
 
                 console.log('Error Loading Garbage Bins:', error);
+
+            });
+
+
+        // Load Vehicles
+
+        fetch('../data/vehicles.json')
+            .then(response => response.json())
+            .then(data => {
+
+                allVehicles = data.vehicles;
+
+                for (var i = 0; i < data.vehicles.length; i++) {
+
+                    addVehicle(data.vehicles[i]);
+
+                }
+
+                if (allVehicles.length > 0) {
+
+                    document.getElementById('vehicleName').innerText = allVehicles[0].name;
+                    document.getElementById('vehicleStatus').innerText = allVehicles[0].status;
+
+                }
+
+                console.log('Vehicles Loaded Successfully!');
+
+            })
+            .catch(error => {
+
+                console.log('Error Loading Vehicles:', error);
 
             });
 

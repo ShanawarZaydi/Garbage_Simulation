@@ -208,5 +208,53 @@ def plan_multi_bin_route():
         return jsonify({"error": str(error)}), 500
 
 
+@app.route("/dispatch-vehicle", methods=["POST"])
+def dispatch_vehicle():
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
+    try:
+        target_node = int(data.get("targetNode"))
+
+        if target_node < 0 or target_node > 767:
+            return jsonify({"error": "Invalid target node"}), 400
+
+        result = subprocess.run(
+            [str(project_folder / "main.exe"), "dispatch", str(target_node)],
+            cwd=project_folder,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+
+        if result.returncode != 0:
+            return (
+                jsonify(
+                    {
+                        "error": "Vehicle dispatch failed",
+                        "output": result.stdout,
+                        "error_details": result.stderr,
+                    }
+                ),
+                400,
+            )
+
+        dispatch_file = project_folder / "data" / "dispatch.json"
+
+        with open(dispatch_file, "r") as file:
+            dispatch_data = json.load(file)
+
+        return jsonify(dispatch_data)
+
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "Vehicle dispatch timed out"}), 500
+
+    except Exception as error:
+        return jsonify({"error": str(error)}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
