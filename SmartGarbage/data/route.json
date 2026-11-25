@@ -1,5 +1,5 @@
 {
-    "destinationNode": 466,
+    "destinationNode": 46,
     "fastestRoute": [
         4,
         374,
@@ -14,19 +14,13 @@
         431,
         481,
         434,
-        562,
-        474,
-        464,
-        468,
-        469,
-        470,
-        580,
-        754,
-        753,
-        466
+        432,
+        563,
+        298,
+        46
     ],
     "priority": "normal",
-    "recommendationReason": "Shortest distance selected for normal collection.",
+    "recommendationReason": "Shortest route selected. Distance 1233.57 m, time 134.55 s. Fastest route saves 12.68 s but adds 106.46 m.",
     "recommendedRoute": [
         4,
         374,
@@ -42,16 +36,8 @@
         286,
         432,
         563,
-        562,
-        474,
-        464,
-        468,
-        469,
-        470,
-        580,
-        754,
-        753,
-        466
+        298,
+        46
     ],
     "shortestRoute": [
         4,
@@ -68,16 +54,8 @@
         286,
         432,
         563,
-        562,
-        474,
-        464,
-        468,
-        469,
-        470,
-        580,
-        754,
-        753,
-        466
+        298,
+        46
     ],
     "startNode": 4
 }

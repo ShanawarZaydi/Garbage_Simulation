@@ -271,3 +271,47 @@ int Graph::findNearestNode(int startNode, vector<int> destinationNodes)
 
     return nearestNode;
 }
+
+double Graph::getRouteDistance(vector<int> route)
+{
+    double totalDistance = 0;
+
+    for (int i = 0; i < route.size() - 1; i++)
+    {
+        int fromNode = route[i];
+        int toNode = route[i + 1];
+
+        for (int j = 0; j < adjacencyList[fromNode].size(); j++)
+        {
+            if (adjacencyList[fromNode][j].destination == toNode)
+            {
+                totalDistance += adjacencyList[fromNode][j].distance;
+                break;
+            }
+        }
+    }
+
+    return totalDistance;
+}
+
+double Graph::getRouteTime(vector<int> route)
+{
+    double totalTime = 0;
+
+    for (int i = 0; i < route.size() - 1; i++)
+    {
+        int fromNode = route[i];
+        int toNode = route[i + 1];
+
+        for (int j = 0; j < adjacencyList[fromNode].size(); j++)
+        {
+            if (adjacencyList[fromNode][j].destination == toNode)
+            {
+                totalTime += adjacencyList[fromNode][j].time;
+                break;
+            }
+        }
+    }
+
+    return totalTime;
+}

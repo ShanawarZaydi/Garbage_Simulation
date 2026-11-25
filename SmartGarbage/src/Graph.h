@@ -28,6 +28,9 @@ public:
 
     vector<int> Dijkstra(int startNode, int destinationNode, bool useTime);
     int findNearestNode(int startNode, vector<int> destinationNodes);
+
+    double getRouteDistance(vector<int> route);
+    double getRouteTime(vector<int> route);
 };
 
 class Trie

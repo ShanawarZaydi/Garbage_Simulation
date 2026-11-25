@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <nlohmann/json.hpp>
 #include "Graph.h"
 
@@ -148,24 +150,101 @@ int main(int argc, char *argv[])
 
     // AI Agent Decision Making
 
-    vector<int> recommendedRoute;
-    string recommendationReason;
-
-    if (priority == "normal")
-    {
-        recommendedRoute = shortestRoute;
-        recommendationReason = "Shortest distance selected for normal collection.";
-    }
-    else if (priority == "urgent")
-    {
-        recommendedRoute = fastestRoute;
-        recommendationReason = "Fastest route selected for urgent collection.";
-    }
-    else
+    if (priority != "normal" && priority != "urgent")
     {
         cout << "\nInvalid Priority! Use normal or urgent." << endl;
         return 1;
     }
+
+    double shortestDistance = cityGraph.getRouteDistance(shortestRoute);
+    double shortestTime = cityGraph.getRouteTime(shortestRoute);
+
+    double fastestDistance = cityGraph.getRouteDistance(fastestRoute);
+    double fastestTime = cityGraph.getRouteTime(fastestRoute);
+
+    double distanceRatio = 1;
+    double timeRatio = 1;
+
+    if (shortestDistance > 0)
+    {
+        distanceRatio = fastestDistance / shortestDistance;
+    }
+
+    if (fastestTime > 0)
+    {
+        timeRatio = shortestTime / fastestTime;
+    }
+
+    double distanceWeight;
+    double timeWeight;
+
+    if (priority == "normal")
+    {
+        distanceWeight = 0.7;
+        timeWeight = 0.3;
+    }
+    else
+    {
+        distanceWeight = 0.3;
+        timeWeight = 0.7;
+    }
+
+    double shortestScore = (distanceWeight * 1) + (timeWeight * timeRatio);
+    double fastestScore = (distanceWeight * distanceRatio) + (timeWeight * 1);
+
+    vector<int> recommendedRoute;
+    string recommendedType;
+
+    if (fastestScore < shortestScore)
+    {
+        recommendedRoute = fastestRoute;
+        recommendedType = "fastest";
+    }
+    else
+    {
+        recommendedRoute = shortestRoute;
+        recommendedType = "shortest";
+    }
+
+    stringstream reasonStream;
+    reasonStream << fixed << setprecision(2);
+
+    if (shortestRoute == fastestRoute)
+    {
+        recommendedRoute = shortestRoute;
+
+        reasonStream << "Both routes are identical. Distance "
+                     << shortestDistance << " m, time "
+                     << shortestTime << " s.";
+    }
+    else if (recommendedType == "fastest")
+    {
+        reasonStream << "Fastest route selected. Distance "
+                     << fastestDistance << " m, time "
+                     << fastestTime << " s.";
+
+        if (fastestDistance > shortestDistance)
+        {
+            reasonStream << " Shortest route saves "
+                         << (fastestDistance - shortestDistance) << " m but adds "
+                         << (shortestTime - fastestTime) << " s.";
+        }
+    }
+    else
+    {
+        reasonStream << "Shortest route selected. Distance "
+                     << shortestDistance << " m, time "
+                     << shortestTime << " s.";
+
+        if (shortestTime > fastestTime)
+        {
+            reasonStream << " Fastest route saves "
+                         << (shortestTime - fastestTime) << " s but adds "
+                         << (fastestDistance - shortestDistance) << " m.";
+        }
+    }
+
+    string recommendationReason = reasonStream.str();
 
     cout << "\n==================================" << endl;
     cout << " AI AGENT RECOMMENDATION" << endl;

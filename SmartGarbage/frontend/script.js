@@ -496,10 +496,23 @@ document.getElementById('calculateRoute').addEventListener('click', function () 
             document.getElementById('agentPriority').innerText =
                 routeData.priority.toUpperCase();
 
-            document.getElementById('agentDecision').innerText =
-                routeData.priority == 'urgent'
-                    ? 'Fastest Route Selected'
-                    : 'Shortest Route Selected';
+            var shortestKey = shortestRoute.join('-');
+            var fastestKey = fastestRoute.join('-');
+            var recommendedKey = routeData.recommendedRoute.join('-');
+
+            var agentDecision;
+
+            if (shortestKey == fastestKey) {
+                agentDecision = 'Both Routes Identical';
+            }
+            else if (recommendedKey == fastestKey) {
+                agentDecision = 'Fastest Route Selected';
+            }
+            else {
+                agentDecision = 'Shortest Route Selected';
+            }
+
+            document.getElementById('agentDecision').innerText = agentDecision;
 
             document.getElementById('agentRoute').innerText =
                 routeData.recommendedRoute.join(' -> ');
