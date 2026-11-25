@@ -258,6 +258,10 @@ int main(int argc, char *argv[])
         int bestVehicleNode = -1;
         double bestDistance = 1000000000.0;
         vector<int> bestApproachRoute;
+        const int MIN_BATTERY = 20;
+        int batterySkipped = 0;
+        int availableCount = 0;
+        int bestVehicleBattery = 0;
 
         for (int i = 0; i < vehicleData["vehicles"].size(); i++)
         {
@@ -267,6 +271,14 @@ int main(int argc, char *argv[])
             {
                 continue;
             }
+
+            int vehicleBattery = vehicleData["vehicles"][i]["battery"];
+            if (vehicleBattery < MIN_BATTERY)
+            {
+                batterySkipped++;
+                continue;
+            }
+            availableCount++;
 
             int vehicleNode = vehicleData["vehicles"][i]["node"];
 
@@ -286,12 +298,20 @@ int main(int argc, char *argv[])
                 bestVehicleName = vehicleData["vehicles"][i]["name"];
                 bestVehicleNode = vehicleNode;
                 bestApproachRoute = approachRoute;
+                bestVehicleBattery = vehicleBattery;
             }
         }
 
         if (bestVehicleId == -1)
         {
-            cout << "\nNo Available Vehicle Can Reach The Target!" << endl;
+            if (availableCount > 0 && batterySkipped > 0)
+            {
+                cout << "\nDISPATCH_ERROR: No available vehicle has sufficient battery (minimum " << MIN_BATTERY << "%)." << endl;
+            }
+            else
+            {
+                cout << "\nNo Available Vehicle Can Reach The Target!" << endl;
+            }
             return 1;
         }
 
@@ -303,6 +323,7 @@ int main(int argc, char *argv[])
         cout << "Assigned Vehicle: " << bestVehicleName << endl;
         cout << "Vehicle Node: " << bestVehicleNode << endl;
         cout << "Approach Distance: " << bestDistance << " meters" << endl;
+        cout << "Vehicle Battery: " << bestVehicleBattery << "%" << endl;
         cout << "Total Waste (from selected bins): " << totalWaste << " units" << endl;
 
         json dispatchData;

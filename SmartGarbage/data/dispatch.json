@@ -1,11 +1,29 @@
 {
     "approachRoute": [
-        4
+        200,
+        127,
+        693,
+        131,
+        148,
+        154,
+        136,
+        143,
+        133,
+        187,
+        152,
+        189,
+        168,
+        182,
+        132,
+        696,
+        502,
+        501,
+        500
     ],
-    "distance": 0.0,
-    "targetNode": 4,
-    "totalWaste": 200,
-    "vehicleId": 1,
-    "vehicleName": "Truck 1",
-    "vehicleNode": 4
+    "distance": 1256.3252185538881,
+    "targetNode": 500,
+    "totalWaste": 250,
+    "vehicleId": 2,
+    "vehicleName": "Truck 2",
+    "vehicleNode": 200
 }

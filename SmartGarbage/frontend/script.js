@@ -655,6 +655,8 @@ function dispatchVehicle() {
 
             document.getElementById('vehicleName').innerText = data.vehicleName;
 
+            document.getElementById('vehicleBattery').innerText = dispatchedVehicle.battery + '%';
+
             document.getElementById('dispatchInfo').innerText =
                 'Nearest eligible: ' + data.vehicleName +
                 ' | Waste: ' + data.totalWaste + ' units' +
@@ -803,6 +805,7 @@ fetch('../data/graph.json')
 
                     document.getElementById('vehicleName').innerText = allVehicles[0].name;
                     document.getElementById('vehicleStatus').innerText = allVehicles[0].status;
+                    document.getElementById('vehicleBattery').innerText = allVehicles[0].battery + '%';
 
                 }
 

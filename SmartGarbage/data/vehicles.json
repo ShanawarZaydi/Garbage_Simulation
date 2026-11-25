@@ -6,7 +6,10 @@
             "type": "truck",
             "node": 4,
             "status": "Idle",
-            "available": true
+            "available": true,
+            "capacity": 100,
+            "currentLoad": 0,
+            "battery": 100
         },
         {
             "id": 2,
@@ -14,7 +17,10 @@
             "type": "truck",
             "node": 200,
             "status": "Idle",
-            "available": true
+            "available": true,
+            "capacity": 300,
+            "currentLoad": 0,
+            "battery": 80
         },
         {
             "id": 3,
@@ -22,7 +28,10 @@
             "type": "truck",
             "node": 500,
             "status": "Busy",
-            "available": false
+            "available": false,
+            "capacity": 200,
+            "currentLoad": 0,
+            "battery": 30
         }
     ]
 }
