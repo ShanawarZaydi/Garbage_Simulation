@@ -41,6 +41,8 @@ var destinationMarker = null;
 // Garbage Bin Management
 
 var binMarkers = {};
+var allBins = [];
+var multiBinLayer = null;
 
 
 // Get Bin Color
@@ -180,6 +182,185 @@ function addGarbageBin(bin) {
 }
 
 
+// Render Bin Checkboxes for Multi-Bin Planning
+
+function renderBinCheckboxes(bins) {
+
+    var container = document.getElementById('binCheckboxes');
+
+    container.innerHTML = '';
+
+    for (var i = 0; i < bins.length; i++) {
+
+        var bin = bins[i];
+
+        var label = document.createElement('label');
+        label.className = 'bin-check-item';
+
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = bin.id;
+
+        var text = document.createElement('span');
+        text.innerText = 'Bin #' + bin.id + ' (Node ' + bin.node + ') - ' + bin.status;
+
+        label.appendChild(checkbox);
+        label.appendChild(text);
+
+        container.appendChild(label);
+    }
+}
+
+
+// Display Multi-Bin Route on Map
+
+function showMultiBinRoute(routeData) {
+
+    var orderedBinIds = routeData.orderedBinIds;
+    var orderedStops = routeData.orderedStops;
+
+    var orderText = '';
+
+    for (var i = 0; i < orderedBinIds.length; i++) {
+
+        orderText += 'Bin #' + orderedBinIds[i];
+
+        if (i != orderedBinIds.length - 1) {
+            orderText += ' -> ';
+        }
+    }
+
+    var resultBox = document.getElementById('multiBinResult');
+
+    resultBox.innerHTML =
+        '<h4>Multi-Bin Plan</h4>' +
+        '<p><strong>Visit Order:</strong> ' + orderText + '</p>' +
+        '<p><strong>Total Distance:</strong> ' + routeData.totalDistance.toFixed(2) + ' m</p>' +
+        '<p><strong>Total Time:</strong> ' + routeData.totalTime.toFixed(2) + ' sec</p>';
+
+    resultBox.classList.add('show');
+
+    if (multiBinLayer != null) {
+        map.removeLayer(multiBinLayer);
+    }
+
+    multiBinLayer = L.layerGroup();
+
+    var routePoints = getRouteGeometry(routeData.fullRoute);
+
+    L.polyline(routePoints, {
+        color: '#6A5ACD',
+        weight: 5
+    }).addTo(multiBinLayer);
+
+    for (var i = 0; i < orderedStops.length; i++) {
+
+        var node = orderedStops[i];
+        var tooltip = i == 0 ? 'START' : String(i);
+
+        L.circleMarker(nodeCoordinates[node], {
+            radius: 10,
+            color: '#FFFFFF',
+            weight: 3,
+            fillColor: i == 0 ? '#83B8CE' : '#6A5ACD',
+            fillOpacity: 1
+        })
+            .bindTooltip(tooltip, {
+                permanent: true,
+                direction: 'top'
+            })
+            .addTo(multiBinLayer);
+    }
+
+    multiBinLayer.addTo(map);
+
+    if (routePoints.length > 0) {
+        map.fitBounds(L.latLngBounds(routePoints));
+    }
+}
+
+
+// Plan Multi-Bin Route Button
+
+document.getElementById('planMultiBinRoute').addEventListener('click', function () {
+
+    var startNode = document.getElementById('multiStartNode').value;
+
+    var checkboxes = document.querySelectorAll('#binCheckboxes input[type="checkbox"]:checked');
+
+    if (startNode == '') {
+        alert('Please enter starting node!');
+        return;
+    }
+
+    if (checkboxes.length == 0) {
+        alert('Please select at least one bin!');
+        return;
+    }
+
+    var binIds = [];
+
+    for (var i = 0; i < checkboxes.length; i++) {
+        binIds.push(Number(checkboxes[i].value));
+    }
+
+    var button = document.getElementById('planMultiBinRoute');
+
+    button.disabled = true;
+    button.innerText = 'Planning...';
+
+    fetch('http://127.0.0.1:5000/plan-multi-bin-route', {
+
+        method: 'POST',
+
+        headers: {
+            'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify({
+            startNode: Number(startNode),
+            binIds: binIds
+        })
+
+    })
+
+        .then(response => {
+
+            return response.json().then(data => {
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                return data;
+            });
+
+        })
+
+        .then(routeData => {
+
+            showMultiBinRoute(routeData);
+
+            console.log('Multi-Bin Route Loaded Successfully!');
+
+        })
+
+        .catch(error => {
+
+            alert(error.message);
+
+        })
+
+        .finally(() => {
+
+            button.disabled = false;
+            button.innerText = 'Plan Multi-Bin Route';
+
+        });
+
+});
+
+
 // Load Road Name Suggestions
 
 fetch('../data/road_names.json')
@@ -250,11 +431,15 @@ fetch('../data/graph.json')
             .then(response => response.json())
             .then(data => {
 
+                allBins = data.bins;
+
                 for (var i = 0; i < data.bins.length; i++) {
 
                     addGarbageBin(data.bins[i]);
 
                 }
+
+                renderBinCheckboxes(allBins);
 
                 console.log('Garbage Bins Loaded Successfully!');
 

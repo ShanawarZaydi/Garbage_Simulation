@@ -114,6 +114,39 @@
             </section>
 
 
+            <section class="multi-bin-panel">
+
+                <h3>Multiple Bin Route Planning</h3>
+
+                <p class="section-description">
+                    Select garbage bins and plan the shortest visiting order.
+                </p>
+
+
+                <div class="input-group multi-bin-start">
+
+                    <label for="multiStartNode">
+                        Starting Node
+                    </label>
+
+                    <input type="number" id="multiStartNode" placeholder="Enter node ID (0-767)" min="0" max="767">
+
+                </div>
+
+
+                <div id="binCheckboxes" class="bin-checkboxes"></div>
+
+
+                <button id="planMultiBinRoute">
+                    Plan Multi-Bin Route
+                </button>
+
+
+                <div id="multiBinResult" class="multi-bin-result"></div>
+
+            </section>
+
+
             <section class="results">
 
                 <h3>Route Information</h3>

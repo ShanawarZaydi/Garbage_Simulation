@@ -47,6 +47,157 @@ int main(int argc, char *argv[])
     cout << "Total Nodes: " << totalNodes << endl;
     cout << "Total Roads: " << data["edges"].size() << endl;
 
+    if (argc >= 2 && string(argv[1]) == "multi")
+    {
+        if (argc < 4)
+        {
+            cout << "\nUsage: main.exe multi <startNode> <binNode1> <binNode2> ..." << endl;
+            return 1;
+        }
+
+        int startNode = stoi(argv[2]);
+
+        if (startNode < 0 || startNode >= totalNodes)
+        {
+            cout << "\nInvalid Starting Node!" << endl;
+            return 1;
+        }
+
+        vector<int> remainingBins;
+
+        for (int i = 3; i < argc; i++)
+        {
+            int binNode = stoi(argv[i]);
+
+            if (binNode < 0 || binNode >= totalNodes)
+            {
+                cout << "\nInvalid Bin Node: " << binNode << endl;
+                return 1;
+            }
+
+            bool alreadyAdded = false;
+
+            for (int j = 0; j < remainingBins.size(); j++)
+            {
+                if (remainingBins[j] == binNode)
+                {
+                    alreadyAdded = true;
+                }
+            }
+
+            if (!alreadyAdded)
+            {
+                remainingBins.push_back(binNode);
+            }
+        }
+
+        if (remainingBins.size() == 0)
+        {
+            cout << "\nNo Bins Selected!" << endl;
+            return 1;
+        }
+
+        vector<int> orderedStops;
+        vector<int> fullRoute;
+
+        int currentNode = startNode;
+        orderedStops.push_back(currentNode);
+        fullRoute.push_back(currentNode);
+
+        while (remainingBins.size() > 0)
+        {
+            int bestIndex = -1;
+            double bestDistance = 1000000000.0;
+            vector<int> bestLegRoute;
+
+            for (int i = 0; i < remainingBins.size(); i++)
+            {
+                vector<int> legRoute = cityGraph.Dijkstra(currentNode, remainingBins[i], false);
+
+                if (legRoute.size() == 0)
+                {
+                    continue;
+                }
+
+                double legDistance = cityGraph.getRouteDistance(legRoute);
+
+                if (legDistance < bestDistance)
+                {
+                    bestDistance = legDistance;
+                    bestIndex = i;
+                    bestLegRoute = legRoute;
+                }
+            }
+
+            if (bestIndex == -1)
+            {
+                cout << "\nSome Bins Are Not Reachable!" << endl;
+                return 1;
+            }
+
+            int nextBin = remainingBins[bestIndex];
+
+            remainingBins.erase(remainingBins.begin() + bestIndex);
+
+            orderedStops.push_back(nextBin);
+
+            for (int i = 0; i < bestLegRoute.size(); i++)
+            {
+                if (fullRoute[fullRoute.size() - 1] != bestLegRoute[i])
+                {
+                    fullRoute.push_back(bestLegRoute[i]);
+                }
+            }
+
+            currentNode = nextBin;
+        }
+
+        double totalDistance = cityGraph.getRouteDistance(fullRoute);
+        double totalTime = cityGraph.getRouteTime(fullRoute);
+
+        cout << "\n==================================" << endl;
+        cout << " MULTI-BIN ROUTE PLAN" << endl;
+        cout << "==================================" << endl;
+
+        cout << "Visit Order: ";
+
+        for (int i = 0; i < orderedStops.size(); i++)
+        {
+            cout << orderedStops[i];
+
+            if (i != orderedStops.size() - 1)
+            {
+                cout << " -> ";
+            }
+        }
+
+        cout << "\nTotal Distance: " << totalDistance << " meters" << endl;
+        cout << "Total Time: " << totalTime << " seconds" << endl;
+
+        json multiRouteData;
+
+        multiRouteData["startNode"] = startNode;
+        multiRouteData["orderedStops"] = orderedStops;
+        multiRouteData["fullRoute"] = fullRoute;
+        multiRouteData["totalDistance"] = totalDistance;
+        multiRouteData["totalTime"] = totalTime;
+
+        ofstream multiRouteFile("data/multi_route.json");
+
+        if (!multiRouteFile.is_open())
+        {
+            cout << "\nUnable to Create Multi Route File!" << endl;
+            return 1;
+        }
+
+        multiRouteFile << multiRouteData.dump(4);
+        multiRouteFile.close();
+
+        cout << "\nMulti-Bin Route Saved Successfully!" << endl;
+
+        return 0;
+    }
+
     ifstream roadFile("data/road_names.json");
 
     if (!roadFile.is_open())

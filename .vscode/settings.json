@@ -1,5 +1,6 @@
 {
     "liveServer.settings.ignoreFiles": [
-        "**/data/route.json"
+        "**/data/route.json",
+        "**/data/multi_route.json"
     ]
 }
